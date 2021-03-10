@@ -31,6 +31,7 @@ public:
   std::vector<double>  eleSigmaIetaIetaOld;
   std::vector<double>  eleSigmaIetaIetaNew;
   std::vector<float>  elePt;
+  std::vector<float>  eleEta;
 
 private:
   void analyze(const edm::Event&, const edm::EventSetup&) override;
@@ -55,6 +56,7 @@ OldLocalCovMiniAOD::OldLocalCovMiniAOD(const edm::ParameterSet& iConfig)
   tree->Branch("eleSigmaIetaIetaOld_",&eleSigmaIetaIetaOld);
   tree->Branch("eleSigmaIetaIetaNew_",&eleSigmaIetaIetaNew);
   tree->Branch("elePt_",&elePt);
+  tree->Branch("eleEta_",&eleEta);
 
 }
 
@@ -71,6 +73,7 @@ void OldLocalCovMiniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup
   eleSigmaIetaIetaOld.clear();
   eleSigmaIetaIetaNew.clear();
   elePt.clear();
+  eleEta.clear();
 
   for(const auto& ele : iEvent.get(eleToken_) ) {
 
@@ -95,6 +98,7 @@ void OldLocalCovMiniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup
     eleSigmaIetaIetaNew.push_back(ele.full5x5_sigmaIetaIeta());
     eleSigmaIetaIetaOld.push_back(sigmaIetaIetaOld);
     elePt.push_back(ele.pt());
+    eleEta.push_back(ele.superCluster()->eta());
     
   }
 
