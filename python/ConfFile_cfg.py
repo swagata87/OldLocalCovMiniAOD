@@ -14,8 +14,8 @@ from CondCore.ESSources.GlobalTag import GlobalTag
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 from Configuration.AlCa.GlobalTag import GlobalTag
-#process.GlobalTag = GlobalTag(process.GlobalTag, '110X_mcRun3_2021_realistic_v6', '')    
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2021_realistic', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2021_realistic', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '113X_mcRun3_2021_realistic_v2', '')
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 

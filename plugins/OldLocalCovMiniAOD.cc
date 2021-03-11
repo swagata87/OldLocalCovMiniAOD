@@ -30,6 +30,7 @@ public:
   TTree   *tree = fs->make<TTree>("EventTree", "EventData");
   std::vector<double>  eleSigmaIetaIetaOld;
   std::vector<double>  eleSigmaIetaIetaNew;
+  std::vector<double>  eleSigmaIetaIetaCMSSW;
   std::vector<float>  elePt;
   std::vector<float>  eleEta;
 
@@ -49,12 +50,14 @@ OldLocalCovMiniAOD::OldLocalCovMiniAOD(const edm::ParameterSet& iConfig)
   EBRecHitCollectionT_(consumes<EcalRecHitCollection>(iConfig.getParameter<edm::InputTag>("EBRecHitCollection"))),
   EERecHitCollectionT_(consumes<EcalRecHitCollection>(iConfig.getParameter<edm::InputTag>("EERecHitCollection")))
 {
-#ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
-  setupDataToken_ = esConsumes<SetupData, SetupRecord>();
-#endif
+
+  //#ifdef THIS_IS_AN_EVENTSETUP_EXAMPLE
+  //setupDataToken_ = esConsumes<SetupData, SetupRecord>();
+  //#endif
 
   tree->Branch("eleSigmaIetaIetaOld_",&eleSigmaIetaIetaOld);
   tree->Branch("eleSigmaIetaIetaNew_",&eleSigmaIetaIetaNew);
+  tree->Branch("eleSigmaIetaIetaCMSSW_",&eleSigmaIetaIetaCMSSW);
   tree->Branch("elePt_",&elePt);
   tree->Branch("eleEta_",&eleEta);
 
@@ -66,18 +69,19 @@ OldLocalCovMiniAOD::~OldLocalCovMiniAOD() {
 void OldLocalCovMiniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   using namespace edm;
 
-  //edm::ESHandle<EcalPFRecHitThresholds> pThresholds;
-  //iSetup.get<EcalPFRecHitThresholdsRcd>().get(pThresholds);
-  //const EcalPFRecHitThresholds* thresholds = pThresholds.product();
+  edm::ESHandle<EcalPFRecHitThresholds> pThresholds;
+  iSetup.get<EcalPFRecHitThresholdsRcd>().get(pThresholds);
+  const EcalPFRecHitThresholds* thresholds = pThresholds.product();
         
   eleSigmaIetaIetaOld.clear();
   eleSigmaIetaIetaNew.clear();
+  eleSigmaIetaIetaCMSSW.clear();
   elePt.clear();
   eleEta.clear();
 
   for(const auto& ele : iEvent.get(eleToken_) ) {
 
-    if ( ele.pt() < 5.0 ) continue;
+    if ( ele.pt() < 6.0 ) continue;
 
     const reco::SuperCluster& superClus = *ele.superCluster();
     const reco::CaloCluster &seedCluster = *superClus.seed();
@@ -94,9 +98,13 @@ void OldLocalCovMiniAOD::analyze(const edm::Event& iEvent, const edm::EventSetup
     using ClusterTools = noZS::EcalClusterTools;     
     std::vector<float> oldLocalCov = ClusterTools::localCovariances(seedCluster,recHits,caloTopology) ;
     float sigmaIetaIetaOld = sqrt(oldLocalCov[0]);
+
+    std::vector<float> newLocalCov = ClusterTools::localCovariances(seedCluster,recHits,caloTopology,4.7,thresholds,1.0,1.25) ;
+    float sigmaIetaIetaNew = sqrt(newLocalCov[0]);
     
-    eleSigmaIetaIetaNew.push_back(ele.full5x5_sigmaIetaIeta());
+    eleSigmaIetaIetaCMSSW.push_back(ele.full5x5_sigmaIetaIeta());
     eleSigmaIetaIetaOld.push_back(sigmaIetaIetaOld);
+    eleSigmaIetaIetaNew.push_back(sigmaIetaIetaNew);
     elePt.push_back(ele.pt());
     eleEta.push_back(ele.superCluster()->eta());
     
